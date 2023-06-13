@@ -1,0 +1,257 @@
+openapi: 3.0.0
+info:
+  title: API Tienda de Videojuegos
+  description: API de una tienda de videojuegos. Ejercicio practico semillero Devco
+  version: 1.0.0
+servers:
+- url: https://api.server.test/v1
+tags:
+- name: Vendedor
+  description: Administra los juegos
+- name: Cliente
+  description: Solicita juegos
+- name: Admins
+  description: Administra todo
+paths:
+  /pedido:
+    get:
+      tags:
+      - Vendedor
+      - Admins
+      summary: Obtiene los pedidos
+      description: Obtiene los pedidos
+      operationId: obtener_pedido
+      parameters:
+      - name: idPedido
+        in: query
+        description: Pasa el id del Pedido
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Pedido'
+                x-content-type: application/json
+        "400":
+          description: Parametros de busqueda incorrectos
+      x-openapi-router-controller: swagger_server.controllers.vendedor_controller
+    post:
+      tags:
+      - Admins
+      summary: Crea un pedido
+      description: Crea un pedido
+      operationId: crear_pedido
+      requestBody:
+        description: Pedido para agregar
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Pedido'
+      responses:
+        "201":
+          description: Pedido Creado
+        "400":
+          description: Objeto invalido
+        "409":
+          description: El pedido ya existe
+      x-openapi-router-controller: swagger_server.controllers.admins_controller
+    delete:
+      tags:
+      - Admins
+      summary: Cancelar un pedido
+      description: Cancelar un pedido
+      operationId: cancelar_pedido
+      parameters:
+      - name: idPedido
+        in: query
+        description: Cancela el pedido por id
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Pedido'
+                x-content-type: application/json
+        "400":
+          description: Objeto invalido
+      x-openapi-router-controller: swagger_server.controllers.admins_controller
+  /pedido/{total}/:
+    get:
+      tags:
+      - Admins
+      - Cliente
+      summary: Obtiene el valor total de los juegos
+      description: Obtiene el valor total de los juegos
+      operationId: obtener_total
+      parameters:
+      - name: total
+        in: path
+        description: Pasa el id de la cuenta
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Pedido'
+                x-content-type: application/json
+        "400":
+          description: Parametros de busqueda incorrectos
+      x-openapi-router-controller: swagger_server.controllers.admins_controller
+  /juego/{idJuego}/:
+    get:
+      tags:
+      - Vendedor
+      - Cliente
+      - Admins
+      summary: Obtiene los juegos
+      description: Obtiene los juegos
+      operationId: obtener_juego
+      parameters:
+      - name: idJuego
+        in: path
+        description: Pasa el id del Juego
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Juego'
+                x-content-type: application/json
+        "400":
+          description: Parametros de busqueda incorrectos
+      x-openapi-router-controller: swagger_server.controllers.vendedor_controller
+    put:
+      tags:
+      - Admins
+      - Vendedor
+      summary: Reemplaza el juego
+      description: Reemplazar el juego
+      operationId: reemplazar_juego
+      parameters:
+      - name: idJuego
+        in: path
+        description: Pasa el id del Juego
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        description: Pedido para agregar
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Juego'
+      responses:
+        "201":
+          description: Juego reemplazado
+        "400":
+          description: Objeto Invalido
+        "409":
+          description: El juego ya existe
+      x-openapi-router-controller: swagger_server.controllers.admins_controller
+    delete:
+      tags:
+      - Vendedor
+      - Admins
+      summary: Borrar el juego
+      description: Borrar el juego
+      operationId: borrar_juego
+      parameters:
+      - name: idJuego
+        in: path
+        description: Borra el juego por id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Juego'
+                x-content-type: application/json
+        "400":
+          description: Objeto invalido
+      x-openapi-router-controller: swagger_server.controllers.vendedor_controller
+components:
+  schemas:
+    Pedido:
+      required:
+      - idPedido
+      - total
+      - usuario
+      type: object
+      properties:
+        idPedido:
+          type: string
+          example: p100
+        total:
+          type: integer
+          example: 4000
+        usuario:
+          type: string
+          example: user1
+      example:
+        usuario: user1
+        idPedido: p100
+        total: 4000
+    Juego:
+      required:
+      - cantidad
+      - idJuego
+      - precio
+      type: object
+      properties:
+        idJuego:
+          type: string
+          example: apex
+        precio:
+          type: integer
+          example: 2000
+        cantidad:
+          type: integer
+          example: 100
+      example:
+        precio: 2000
+        idJuego: apex
+        cantidad: 100
+
