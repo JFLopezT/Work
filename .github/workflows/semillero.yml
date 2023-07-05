@@ -1,0 +1,56 @@
+name: semillero
+
+
+on:
+  push:
+    branches: [ "main" ]
+
+
+
+env:
+
+  REGISTRY: docker.io
+  IMAGE_NAME: "JFLopezT/Work"
+  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+        
+          - name: Setup Python
+            uses: actions/setup-python@v3.1.4
+          - name: Dependencies Python
+            run: "pip install --no-cache-dir --upgrade -r requirements.txt"
+          - name: Unit Test Python
+            run: "python -m unittest discover tests"
+          - name: SonarCloud Scan
+            uses: SonarSource/sonarcloud-github-action@v1.9.1
+          - name: SonarQube Quality Gate Check
+            uses: sonarsource/sonarqube-quality-gate-action@master
+            timeout-minutes: 5
+            env:
+             SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+
+
+
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          push: true
+          tags: ${{ env.IMAGE_NAME }}:latest
